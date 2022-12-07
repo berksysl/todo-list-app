@@ -5,23 +5,26 @@ let todos = JSON.parse(localStorage.getItem("todo-list"));
 
 function showToDo(){
     let liElement = "";
-    todos.forEach((todo,id) => {
-        liElement += 
-        `<li class="task">
-            <label for="${id}">
-                <input type="checkbox" id="${id}">
-                <p>${todo.name}</p>
-            </label>
-            <div class="settings">
-                <i class="fa-solid fa-ellipsis"></i>
-                <ul class="task-menu">
-                    <li><i class="uil uil-pen"></i>Edit</li>
-                    <li><i class="uil uil-trash"></i>Remove</li>
-                </ul>
-            </div>
-    </li>`
+    if(todos){
+        todos.forEach((todo,id) => {
+            let isCompleted = todo.status == "completed" ? "checked" : ""; 
+            liElement += 
+            `<li class="task">
+                <label for="${id}">
+                    <input onclick="updateStatus(this)" type="checkbox" id="${id}" ${isCompleted}>
+                    <p class="${isCompleted}">${todo.name}</p>
+                </label>
+                <div class="settings">
+                    <i onclick="showMenu(this)" class="fa-solid fa-ellipsis"></i>
+                    <ul class="task-menu">
+                        <li onclick="editTask(${id}, '${todo.name}')"><i class="fa-solid fa-pen"></i>Edit</li>
+                        <li onclick="deleteTask(${id})"><i class="fa-solid fa-trash"></i>Remove</li>
+                    </ul>
+                </div>
+        </li>`
+        }
+        );
     }
-    );
     taskBox.innerHTML = liElement;
 }
 
@@ -40,3 +43,36 @@ taskInput.addEventListener("keyup", e => {
         showToDo();
     }
 })
+
+function updateStatus(selectedTask) {
+    let taskName = selectedTask.parentElement.lastElementChild;
+    if(selectedTask.checked){
+        taskName.classList.add("checked");
+        todos[selectedTask.id].status = "completed";
+    }
+    else {
+        taskName.classList.remove("checked");
+        todos[selectedTask.id].status = "pending";
+    }
+    localStorage.setItem("todo-list", JSON.stringify(todos));
+}
+
+function showMenu(selectedTask) {
+    let taskMenu = selectedTask.parentElement.lastElementChild;
+    taskMenu.classList.add("show");
+    document.addEventListener("click", e => {
+        if(e.target.tagName != "I" || e.target != selectedTask){
+            taskMenu.classList.remove("show");
+        }
+    })
+}
+
+function deleteTask(deleteId) {
+    todos.splice(deleteId, 1);
+    localStorage.setItem("todo-list", JSON.stringify(todos));
+    showToDo();
+}
+
+function editTask(taskId, taskName) {
+    taskInput.value = taskName;
+}

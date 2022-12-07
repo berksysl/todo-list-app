@@ -95,6 +95,10 @@ body {
     border-bottom: 1px solid #ccc;
 }
 
+.task label p.checked {
+    text-decoration: line-through;
+}
+
 .task-box .task:last-child {
     margin-bottom: 0;
     padding-bottom: 0;
@@ -128,7 +132,7 @@ body {
     transition: transform .2s ease;
 }
 
-.settings:hover .task-menu {
+.task-menu.show {
     transform: scale(1);
 }
 

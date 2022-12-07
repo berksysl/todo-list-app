@@ -1,13 +1,18 @@
 const taskInput = document.querySelector('.task-input input');
 const taskBox = document.querySelector('.task-box');
+const filters = document.querySelectorAll('.filters span');
+const clearAll = document.querySelector('.clear-btn');
 //Getting localstorage "todo-list" value
 let todos = JSON.parse(localStorage.getItem("todo-list"));
+let editId;
+let isEditedTask = false;
 
-function showToDo(){
+function showToDo(filter){
     let liElement = "";
     if(todos){
         todos.forEach((todo,id) => {
             let isCompleted = todo.status == "completed" ? "checked" : ""; 
+            if(filter == todo.status || filter == "all"){
             liElement += 
             `<li class="task">
                 <label for="${id}">
@@ -21,26 +26,32 @@ function showToDo(){
                         <li onclick="deleteTask(${id})"><i class="fa-solid fa-trash"></i>Remove</li>
                     </ul>
                 </div>
-        </li>`
+            </li>`;
+            }
         }
         );
     }
-    taskBox.innerHTML = liElement;
+    taskBox.innerHTML = liElement || `<span>You don't have any task here</span>`;
 }
 
-showToDo();
+showToDo("all");
 
 taskInput.addEventListener("keyup", e => {
     let userTask = taskInput.value.trim();
     if(e.key == "Enter" && userTask){
-        if(!todos){
-            todos = [];
+        if(!isEditedTask){
+            if(!todos){
+                todos = [];
+            }
+            let taskInfo = {name: userTask, status: "pending"};
+            todos.push(taskInfo);
+        } else {
+            isEditedTask = false;
+            todos[editId].name = userTask;
         }
         taskInput.value = "";
-        let taskInfo = {name: userTask, status: "pending"}
-        todos.push(taskInfo);
         localStorage.setItem("todo-list", JSON.stringify(todos));
-        showToDo();
+        showToDo("all");
     }
 })
 
@@ -70,9 +81,25 @@ function showMenu(selectedTask) {
 function deleteTask(deleteId) {
     todos.splice(deleteId, 1);
     localStorage.setItem("todo-list", JSON.stringify(todos));
-    showToDo();
+    showToDo("all");
 }
 
 function editTask(taskId, taskName) {
+    editId = taskId;
+    isEditedTask = true;
     taskInput.value = taskName;
 }
+
+filters.forEach(btn => {
+    btn.addEventListener("click", () => {
+        document.querySelector('span.active').classList.remove("active");
+        btn.classList.add("active");
+        showToDo(btn.id);
+    })
+})
+
+clearAll.addEventListener("click", () => {
+    todos.splice(0, todos.length);
+    localStorage.setItem("todo-list", JSON.stringify(todos));
+    showToDo("all");
+})
